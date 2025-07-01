@@ -127,14 +127,20 @@ def _get_isainstrclass_filtered_weights(fuzzerstate):
         ret_dict[ISAInstrClass.EXCEPTION] = 0
     if not fuzzerstate.privilegestate.privstate in (PrivilegeStateEnum.MACHINE, PrivilegeStateEnum.SUPERVISOR) \
         or "vexriscv" in fuzzerstate.design_name and is_forbid_vexriscv_csrs() \
-        or "picorv32" in fuzzerstate.design_name and not is_tolerate_picorv32_missingmandatorycsrs() and not is_tolerate_picorv32_readnonimplcsr() and not is_tolerate_picorv32_writehpm() and not is_tolerate_picorv32_readhpm_nocsrrs():
+        or "picorv32" in fuzzerstate.design_name and not is_tolerate_picorv32_missingmandatorycsrs() and not is_tolerate_picorv32_readnonimplcsr() and not is_tolerate_picorv32_writehpm() and not is_tolerate_picorv32_readhpm_nocsrrs() \
+        or "risc0" in fuzzerstate.design_name:
         ret_dict[ISAInstrClass.RANDOM_CSR] = 0
+        import logging
+        logger = logging.getLogger(__name__)
+        # logger.warning(f"pickisainstrclass.py: CSR instructions DISABLED due to privilege/design constraints (risc0: {'risc0' in fuzzerstate.design_name})")
+    else:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"pickisainstrclass.py: CSR instructions ENABLED - privilege:{fuzzerstate.privilegestate.privstate}, design:{fuzzerstate.design_name}, weight:{ret_dict[ISAInstrClass.RANDOM_CSR]}")
     if "kronos" in fuzzerstate.design_name and not is_tolerate_kronos_fence() \
         or "picorv32" in fuzzerstate.design_name and not is_tolerate_picorv32_fence() \
             or (MAX_NUM_FENCES_PER_EXECUTION is not None and fuzzerstate.special_instrs_count > MAX_NUM_FENCES_PER_EXECUTION):
         ret_dict[ISAInstrClass.SPECIAL] = 0
-    if "risc0" in fuzzerstate.design_name:
-        ret_dict[ISAInstrClass.RANDOM_CSR] = 0
     # Normalize the weights
     if DO_ASSERT:
         assert sum(ret_dict.values()) > 0, "The sum of filtered isa pick weights must be strictly positive!"
@@ -178,4 +184,13 @@ def gen_next_isainstrclass(fuzzerstate) -> ISAInstrClass:
     _filter_regfsm_weight(fuzzerstate, filtered_weights)
     _filter_sensitive_instr_weights(fuzzerstate, filtered_weights)
 
-    return _gen_next_isainstrclass_from_weights(filtered_weights)
+    result = _gen_next_isainstrclass_from_weights(filtered_weights)
+    
+    if result == ISAInstrClass.RANDOM_CSR:
+        import logging
+        import traceback
+        logger = logging.getLogger(__name__)
+        logger.warning(f"pickisainstrclass.py: SELECTED ISAInstrClass.RANDOM_CSR!")
+        logger.warning(f"Stack trace:\n{''.join(traceback.format_stack())}")
+    
+    return result
