@@ -4,6 +4,9 @@
 
 # This module defines the final block.
 
+import logging
+logger = logging.getLogger(__name__)
+
 from params.runparams import DO_ASSERT
 from rv.csrids import CSR_IDS
 from common.designcfgs import is_design_32bit, get_design_stop_sig_addr, get_design_reg_dump_addr, design_has_float_support, design_has_double_support, get_design_fpreg_dump_addr
@@ -62,6 +65,7 @@ def finalblock(fuzzerstate, design_name: str):
             assert get_design_fpreg_dump_addr(design_name) == regdump_addr + 8, f"We make the assumption that the FP regdump addr is the int regdump address + 8. However, currently, they are respectively {hex(get_design_fpreg_dump_addr(design_name))} and regdump_addr={hex(regdump_addr)}"
         if fuzzerstate.privilegestate.privstate == PrivilegeStateEnum.MACHINE:
             # Enable the FPU
+            logger.warning(f"[finalblock:65] Creating CSR instruction: csrrw to MSTATUS (FPU enable for finalblock)")
             ret.append(CSRRegInstruction("csrrw", 0, FPU_ENDIS_REGISTER_ID, CSR_IDS.MSTATUS))
             fuzzerstate.is_fpu_activated = True
         if fuzzerstate.is_fpu_activated:
