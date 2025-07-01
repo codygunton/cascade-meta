@@ -41,7 +41,7 @@ def gen_initial_basic_block(fuzzerstate, offset_addr: int, csr_init_rounding_mod
     if DO_ASSERT:
         assert curr_addr == fuzzerstate.curr_bb_start_addr + len(fuzzerstate.instr_objs_seq[-1]) * 4 # NO_COMPRESSED
 
-    if not ("vexriscv" in fuzzerstate.design_name and is_forbid_vexriscv_csrs()):
+    if not (is_forbid_vexriscv_csrs()):
         # Write 0 to medeleg to uniformize across designs. This must be done in initialblock to facilitate the analysis.
         if fuzzerstate.design_has_supervisor_mode:
             fuzzerstate.add_instruction(CSRRegInstruction("csrrw", 0, 0, CSR_IDS.MEDELEG))
@@ -56,7 +56,7 @@ def gen_initial_basic_block(fuzzerstate, offset_addr: int, csr_init_rounding_mod
             curr_addr += 4
 
     # We authorize all accesses through the PMP registers
-    if not ("vexriscv" in fuzzerstate.design_name and is_forbid_vexriscv_csrs()):
+    if not (is_forbid_vexriscv_csrs()):
         if fuzzerstate.design_has_pmp:
             # pmpcfg0
             fuzzerstate.add_instruction(RegImmInstruction("addi", 1, 0, 31, fuzzerstate.is_design_64bit))
@@ -76,7 +76,7 @@ def gen_initial_basic_block(fuzzerstate, offset_addr: int, csr_init_rounding_mod
                 curr_addr += 8
 
     # Write random values into the performance monitor CSRs (zeros for now)
-    if not ("vexriscv" in fuzzerstate.design_name and is_forbid_vexriscv_csrs()):
+    if not (is_forbid_vexriscv_csrs()):
         if fuzzerstate.design_name != 'picorv32':
             fuzzerstate.add_instruction(CSRRegInstruction("csrrw", 0, 0, CSR_IDS.MCYCLE))
             fuzzerstate.add_instruction(CSRRegInstruction("csrrw", 0, 0, CSR_IDS.MINSTRET))
@@ -97,6 +97,7 @@ def gen_initial_basic_block(fuzzerstate, offset_addr: int, csr_init_rounding_mod
 
     # Start with enabled FPU, if the FPU exists.
     if fuzzerstate.design_has_fpu:
+        print("HAS FPU")
         # FUTURE Create dependencies on FPU_ENDIS_REGISTER_ID
         # Prepare FPU_ENDIS_REGISTER_ID, which will be used across the program's execution
         fuzzerstate.add_instruction(ImmRdInstruction("lui", FPU_ENDIS_REGISTER_ID, 0b110, fuzzerstate.is_design_64bit))
@@ -111,6 +112,7 @@ def gen_initial_basic_block(fuzzerstate, offset_addr: int, csr_init_rounding_mod
     curr_addr += 4 # NO_COMPRESSED
 
     if fuzzerstate.design_has_supervisor_mode or fuzzerstate.design_has_user_mode:
+        print("HAS MODE")
         fuzzerstate.add_instruction(RegImmInstruction("srli", MPP_TOP_ENDIS_REGISTER_ID, 1, 1, fuzzerstate.is_design_64bit))
         fuzzerstate.add_instruction(RegImmInstruction("srli", MPP_BOTH_ENDIS_REGISTER_ID, 1, 2, fuzzerstate.is_design_64bit))
         fuzzerstate.add_instruction(R12DInstruction("or", MPP_BOTH_ENDIS_REGISTER_ID, MPP_BOTH_ENDIS_REGISTER_ID, MPP_TOP_ENDIS_REGISTER_ID))
