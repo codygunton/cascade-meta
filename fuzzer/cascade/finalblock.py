@@ -53,10 +53,10 @@ def finalblock(fuzzerstate, design_name: str):
     ]
 
     # Store the register values to the register dump address
-    ret.append(SpecialInstruction("fence")) # Hopefully this prevents speculative execution of the stores
+    # ret.append(SpecialInstruction("fence")) # Hopefully this prevents speculative execution of the stores
     for reg_id in range(1, MAX_NUM_PICKABLE_REGS):
         ret.append(IntStoreInstruction("sd" if is_design_64bit else "sw", RDEP_MASK_REGISTER_ID, reg_id, 0, -1, is_design_64bit))
-        ret.append(SpecialInstruction("fence"))
+        # ret.append(SpecialInstruction("fence"))
 
     # Store the floating values as well, if FPU is supported and if there is no risk of it being deactivated
     if design_has_fpu and not fuzzerstate.is_fpu_activated:
@@ -71,7 +71,7 @@ def finalblock(fuzzerstate, design_name: str):
         if fuzzerstate.is_fpu_activated:
             for reg_id in range(MAX_NUM_PICKABLE_FLOATING_REGS):
                 ret.append(FloatStoreInstruction("fsd" if design_has_fpudouble else "fsw", RDEP_MASK_REGISTER_ID, reg_id, 8, -1, is_design_64bit))
-                ret.append(SpecialInstruction("fence"))
+                # ret.append(SpecialInstruction("fence"))
 
     ###
     # Stop request
@@ -88,7 +88,7 @@ def finalblock(fuzzerstate, design_name: str):
 
     # Store the register values to the register dump address
     ret.append(IntStoreInstruction("sd" if is_design_64bit else "sw", RDEP_MASK_REGISTER_ID, 0, 0 & 0xFFFF, -1, is_design_64bit))
-    ret.append(SpecialInstruction("fence"))
+    # ret.append(SpecialInstruction("fence"))
 
     # Infinite loop in the end of the simulation
     ret.append(JALInstruction("jal", 0, 0))
