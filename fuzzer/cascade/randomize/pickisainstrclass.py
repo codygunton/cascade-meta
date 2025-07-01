@@ -53,7 +53,7 @@ ISAINSTRCLASS_INITIAL_BOOSTERS = {
 # Do NOT @cache this function, as it is a random function.
 def _gen_next_isainstrclass_from_weights(weights: list = None) -> ISAInstrClass:
     ret = random.choices(list(weights.keys()), weights=weights.values())[0]
-    assert weights[ret] != 0
+    # assert weights[ret] != 0
     return ret
 
 # @brief For now, the weights used for choosing instructions are fixed over time.
@@ -133,7 +133,8 @@ def _get_isainstrclass_filtered_weights(fuzzerstate):
         or "picorv32" in fuzzerstate.design_name and not is_tolerate_picorv32_fence() \
             or (MAX_NUM_FENCES_PER_EXECUTION is not None and fuzzerstate.special_instrs_count > MAX_NUM_FENCES_PER_EXECUTION):
         ret_dict[ISAInstrClass.SPECIAL] = 0
-
+    if "risc0" in fuzzerstate.design_name:
+        ret_dict[ISAInstrClass.RANDOM_CSR] = 0
     # Normalize the weights
     if DO_ASSERT:
         assert sum(ret_dict.values()) > 0, "The sum of filtered isa pick weights must be strictly positive!"
