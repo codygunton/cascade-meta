@@ -41,7 +41,7 @@ ISAINSTRCLASS_INITIAL_BOOSTERS = {
     ISAInstrClass.EXCEPTION:   0.1,
     ISAInstrClass.RANDOM_CSR:  0.01,
     ISAInstrClass.DESCEND_PRV: .01,
-    ISAInstrClass.SPECIAL:     0.0001
+    ISAInstrClass.SPECIAL:     0.0
 }
 
 ###
