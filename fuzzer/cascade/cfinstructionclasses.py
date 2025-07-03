@@ -1043,18 +1043,7 @@ class RawDataWord:
                 self.wordval = wordval + (1 << 32)
 
     def gen_bytecode_int(self, is_spike_resolution: bool):
-        # Check if this raw data word looks like a CSR instruction
-        opcode = self.wordval & 0x7f
-        if opcode == 0x73:  # CSR opcode
-            funct3 = (self.wordval >> 12) & 0x7
-            csr = (self.wordval >> 20) & 0xfff
-            if funct3 in [0b001, 0b010, 0b011, 0b101, 0b110, 0b111]:  # CSR function codes
-                import logging
-                import traceback
-                logger = logging.getLogger(__name__)
-                logger.warning(f"cfinstructionclasses.py:RawDataWord: Creating raw data word that looks like CSR instruction: 0x{self.wordval:08x} (CSR=0x{csr:x})")
-                logger.warning(f"Stack trace:\n{''.join(traceback.format_stack())}")
-        return self.wordval
+       return self.wordval
 
 ###
 # For exceptions

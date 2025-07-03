@@ -466,17 +466,6 @@ def gen_random_data_block(fuzzerstate):
     # Generate the random data
     for addr in range(fuzzerstate.random_data_block_start_addr, fuzzerstate.random_data_block_end_addr, 4):
         random_value = random.randrange(0, 2**32)
-        # Check if this random value looks like a CSR instruction
-        opcode = random_value & 0x7f
-        if opcode == 0x73:  # CSR opcode
-            funct3 = (random_value >> 12) & 0x7
-            csr = (random_value >> 20) & 0xfff
-            if funct3 in [0b001, 0b010, 0b011, 0b101, 0b110, 0b111]:  # CSR function codes
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.warning(f"basicblock.py: Random data at 0x{addr:x} looks like CSR instruction: 0x{random_value:08x} (CSR=0x{csr:x})")
-                import traceback
-                logger.warning(f"Stack trace:\n{''.join(traceback.format_stack())}")
         fuzzerstate.random_block_content4by4bytes.append(random_value)
 
 # This must be done early, say, just after generating the first basic block, to 
