@@ -39,7 +39,7 @@ def __gen_elf_worker(in_tuple):
 
 
 def gen_many_elfs(design_name: str, num_cores: int, num_elfs: int, outdir_path, verbose: bool = True):
-    random.seed(0)
+    # random.seed(0)
 
     # Ensure that the output directory exists.
     os.makedirs(outdir_path, exist_ok=True)
